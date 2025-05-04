@@ -1,7 +1,6 @@
-import { Text, View, StyleSheet } from "react-native";
-import LandingPageIllustration from "@/assets/svg/landing_page_illustration";
-import { BigButton } from "@/components/BigButton";
+import { Text, View, StyleSheet, ImageBackground } from "react-native";
 import { useRouter } from "expo-router";
+import { BigButton } from "@/components/BigButton";
 
 // Landing page
 export default function Index() {
@@ -11,41 +10,47 @@ export default function Index() {
   const router = useRouter();
 
   return (
-    <View style={styles.containerView}>
-      <View style={styles.sectionA}>
-        <LandingPageIllustration style={styles.illustration} />
-        <Text style={styles.headingText}>Manage all your todos simply</Text>
-      </View>
-      <View style={styles.sectionB}>
-        <BigButton title="Log in" onPress={() => router.navigate("/login")} />
-      </View>
+    <View style={styles.container}>
+      <ImageBackground
+        style={styles.imageBackground}
+        source={require("@/assets/images/clean-purple-background.jpg")}
+      >
+        <Text style={styles.headingText}>
+          The best app for managing your todos
+        </Text>
+        <BigButton
+          style={styles.bigButton}
+          textStyle={styles.bigButtonText}
+          title="Login"
+          onPress={() => router.navigate("/login")}
+        />
+      </ImageBackground>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  containerView: {
-    gap: 20,
-    display: "flex",
+  container: {
+    flex: 1,
   },
-  sectionA: {
-    paddingTop: 100,
-    paddingBottom: 40,
+  imageBackground: {
+    flex: 1,
+    paddingVertical: 30,
     alignItems: "center",
   },
-  sectionB: {
-    paddingTop: 40,
-  },
-  illustration: {
-    width: 250,
-    height: 250,
-  },
   headingText: {
-    paddingTop: 50,
-    paddingBottom: 50,
-    paddingLeft: 20,
-    paddingRight: 20,
-    fontSize: 50,
-    fontWeight: "bold",
+    paddingVertical: 120,
+    paddingHorizontal: 40,
+    fontSize: 60,
+    fontWeight: "500",
+    color: "#a66ff5",
+  },
+  bigButton: {
+    marginTop: 100,
+    borderRadius: 20,
+    backgroundColor: "#4A3EFF",
+  },
+  bigButtonText: {
+    color: "#fff",
   },
 });

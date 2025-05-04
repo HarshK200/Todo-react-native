@@ -28,6 +28,7 @@ const BigButton = ({ title, onPress, style, textStyle }: BigButtonProps) => {
 
 const styles = StyleSheet.create({
   button: {
+    width: 350,
     backgroundColor: "#6c63ff",
     marginHorizontal: 20,
     paddingHorizontal: 0,
