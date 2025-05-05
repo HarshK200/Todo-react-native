@@ -1,14 +1,26 @@
-import { Text, Button, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { BigButton } from "@/components/BigButton";
 import LandingPageIllustration from "@/assets/svg/landing_page_illustration";
+import { useEffect } from "react";
+import * as SecureStore from "expo-secure-store";
 
 // Landing page
 export default function Index() {
+  const router = useRouter();
+
   // TODO: check for auth token validity by getting it for expo-secure-store
   // and verifying it by making a request to /auth/me
   // (IF USER IS VERIFIED REDIRECT TO DASHBOARD)
-  const router = useRouter();
+
+  useEffect(() => {
+    // SecureStore.deleteItemAsync("accessToken");
+    SecureStore.getItemAsync("accessToken").then((accessToken) => {
+      if (accessToken) {
+        router.navigate("/todo");
+      }
+    });
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -20,7 +32,7 @@ export default function Index() {
         style={styles.bigButton}
         textStyle={styles.bigButtonText}
         title="Login"
-        onPress={() => router.navigate("/login")}
+        onPress={() => router.navigate("/auth/login")}
       />
       <Text
         style={styles.smallButtonText}
@@ -45,16 +57,14 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   headingText: {
-    paddingVertical: 120,
+    paddingVertical: 80,
     paddingHorizontal: 40,
     fontSize: 60,
     fontWeight: "500",
     color: "#000",
   },
   bigButton: {
-    marginTop: 150,
-    borderRadius: 20,
-    backgroundColor: "#4A3EFF",
+    marginTop: 220,
   },
   bigButtonText: {
     color: "#fff",

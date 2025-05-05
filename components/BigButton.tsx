@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Text,
+  ActivityIndicator,
 } from "react-native";
 
 interface BigButtonProps {
@@ -12,29 +13,48 @@ interface BigButtonProps {
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
+  loading?: boolean;
 }
 
-const BigButton = ({ title, onPress, style, textStyle }: BigButtonProps) => {
+export function BigButton({
+  title,
+  onPress,
+  style,
+  textStyle,
+  loading,
+}: BigButtonProps) {
   return (
     <TouchableOpacity
       style={[styles.button, style]}
       onPress={onPress}
       activeOpacity={0.9}
     >
-      <Text style={[styles.buttonText, textStyle]}>{title}</Text>
+      {loading ? (
+        <ActivityIndicator color="white" />
+      ) : (
+        <Text style={[styles.buttonText, textStyle]}>{title}</Text>
+      )}
     </TouchableOpacity>
   );
-};
+}
 
 const styles = StyleSheet.create({
   button: {
     width: 350,
+    height: 51,
     backgroundColor: "#6c63ff",
-    marginHorizontal: 20,
-    paddingHorizontal: 0,
     paddingVertical: 12,
     borderRadius: 30,
-    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    display: "flex",
+    flexDirection: "row",
+
+    shadowColor: "#6c63ff",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.36,
+    shadowRadius: 6,
+    elevation: 10, // Only for android
   },
   buttonText: {
     color: "#fff",
@@ -42,5 +62,3 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
 });
-
-export { BigButton };

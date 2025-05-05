@@ -1,4 +1,10 @@
-import { Text, View, StyleSheet, TextInput } from "react-native";
+import {
+  Text,
+  View,
+  StyleSheet,
+  TextInput,
+  ActivityIndicator,
+} from "react-native";
 import LandingPageIllustration from "@/assets/svg/landing_page_illustration";
 import { BigButton } from "@/components/BigButton";
 import UserIcon from "@/assets/svg/user_icon";
@@ -6,15 +12,24 @@ import LockIcon from "@/assets/svg/lock_icon";
 import { useState } from "react";
 import EyeSlashIcon from "@/assets/svg/eye_slash_icon";
 import EyeIcon from "@/assets/svg/eye_icon";
+import * as SecureStore from "expo-secure-store";
+import { LoginResponse } from "@/types";
+import { useRouter } from "expo-router";
 
 // Login page
 export default function Login() {
+  const [errorMsg, setErrorMsg] = useState<string | undefined>();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [passwordHidden, setPasswordHidden] = useState(true);
+  const [loginLoading, setLoginLoading] = useState(false);
 
-  function handleLogin() {
-    fetch("https://dummyjson.com/auth/login", {
+  const router = useRouter();
+
+  async function handleLogin() {
+    setLoginLoading(true);
+
+    const response = await fetch("https://dummyjson.com/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -23,9 +38,21 @@ export default function Login() {
         expiresInMins: 30, // optional, defaults to 60
       }),
       credentials: "include", // Include cookies (e.g., accessToken) in the request
-    })
-      .then((res) => res.json())
-      .then(console.log);
+    });
+    const result = (await response.json()) as LoginResponse;
+    console.log(result);
+
+    if (response.status === 200) {
+      await SecureStore.setItemAsync("accessToken", result.accessToken);
+      await SecureStore.setItemAsync("refreshToken", result.refreshToken);
+
+      setLoginLoading(false);
+      router.navigate("/todo");
+    } else {
+      setLoginLoading(false);
+      setErrorMsg(result.message!);
+      // console.log("Response message: ", result.message);
+    }
   }
 
   return (
@@ -44,34 +71,35 @@ export default function Login() {
           />
           <UserIcon style={styles.inputIcon} />
         </View>
-
         <View style={styles.textInputWrapper}>
           <TextInput
             style={styles.textInput}
             placeholder="Password"
             placeholderTextColor={"#4A3EFF"}
-            secureTextEntry={passwordVisible}
+            secureTextEntry={passwordHidden}
             value={password}
             onChange={(e) => setPassword(e.nativeEvent.text)}
           />
           <LockIcon style={styles.inputIcon} />
-          {passwordVisible ? (
+          {passwordHidden ? (
             <EyeIcon
               style={styles.eyeIcon}
-              onPress={() => setPasswordVisible(false)}
+              onPress={() => setPasswordHidden(false)}
             />
           ) : (
             <EyeSlashIcon
               style={styles.eyeIcon}
-              onPress={() => setPasswordVisible(true)}
+              onPress={() => setPasswordHidden(true)}
             />
           )}
         </View>
+        <Text style={styles.errorMessage}>{errorMsg}</Text>
       </View>
       <BigButton
         title="Login"
         onPress={handleLogin}
         style={styles.bigButtonStyle}
+        loading={loginLoading}
       />
     </View>
   );
@@ -127,5 +155,11 @@ const styles = StyleSheet.create({
     right: 15,
     top: 15,
   },
-  bigButtonStyle: { marginTop: 120 },
+  bigButtonStyle: { marginTop: 100 },
+  errorMessage: {
+    marginVertical: 15,
+    marginHorizontal: 10,
+    alignSelf: "flex-start",
+    color: "red",
+  },
 });
