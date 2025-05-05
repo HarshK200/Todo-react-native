@@ -3,7 +3,6 @@ import {
   View,
   StyleSheet,
   TextInput,
-  ActivityIndicator,
 } from "react-native";
 import LandingPageIllustration from "@/assets/svg/landing_page_illustration";
 import { BigButton } from "@/components/BigButton";
