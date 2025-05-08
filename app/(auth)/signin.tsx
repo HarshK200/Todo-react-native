@@ -1,9 +1,4 @@
-import {
-  Text,
-  View,
-  StyleSheet,
-  TextInput,
-} from "react-native";
+import { Text, View, StyleSheet, TextInput } from "react-native";
 import LandingPageIllustration from "@/assets/svg/landing_page_illustration";
 import { BigButton } from "@/components/BigButton";
 import UserIcon from "@/assets/svg/user_icon";
@@ -12,21 +7,21 @@ import { useState } from "react";
 import EyeSlashIcon from "@/assets/svg/eye_slash_icon";
 import EyeIcon from "@/assets/svg/eye_icon";
 import * as SecureStore from "expo-secure-store";
-import { LoginResponse } from "@/types";
+import { SigninResponse } from "@/types";
 import { useRouter } from "expo-router";
 
-// Login page
-export default function Login() {
+// Signin page
+const SignIn = () => {
   const [errorMsg, setErrorMsg] = useState<string | undefined>();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [passwordHidden, setPasswordHidden] = useState(true);
-  const [loginLoading, setLoginLoading] = useState(false);
+  const [signinLoading, setSigninLoading] = useState(false);
 
   const router = useRouter();
 
-  async function handleLogin() {
-    setLoginLoading(true);
+  async function handleSignin() {
+    setSigninLoading(true);
 
     const response = await fetch("https://dummyjson.com/auth/login", {
       method: "POST",
@@ -38,17 +33,17 @@ export default function Login() {
       }),
       credentials: "include", // Include cookies (e.g., accessToken) in the request
     });
-    const result = (await response.json()) as LoginResponse;
+    const result = (await response.json()) as SigninResponse;
     console.log(result);
 
     if (response.status === 200) {
       await SecureStore.setItemAsync("accessToken", result.accessToken);
       await SecureStore.setItemAsync("refreshToken", result.refreshToken);
 
-      setLoginLoading(false);
-      router.navigate("/todo");
+      setSigninLoading(false);
+      router.navigate("/home");
     } else {
-      setLoginLoading(false);
+      setSigninLoading(false);
       setErrorMsg(result.message!);
       // console.log("Response message: ", result.message);
     }
@@ -58,7 +53,7 @@ export default function Login() {
     <View style={styles.containerView}>
       <LandingPageIllustration style={styles.illustration} />
       <Text style={styles.headingText}>Welcome Back</Text>
-      <Text style={styles.subHeadingText}>Login to your account</Text>
+      <Text style={styles.subHeadingText}>SignIn to your account</Text>
       <View style={styles.inputForm}>
         <View style={styles.textInputWrapper}>
           <TextInput
@@ -95,14 +90,14 @@ export default function Login() {
         <Text style={styles.errorMessage}>{errorMsg}</Text>
       </View>
       <BigButton
-        title="Login"
-        onPress={handleLogin}
+        title="Signin"
+        onPress={handleSignin}
         style={styles.bigButtonStyle}
-        loading={loginLoading}
+        loading={signinLoading}
       />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   containerView: {
@@ -162,3 +157,5 @@ const styles = StyleSheet.create({
     color: "red",
   },
 });
+
+export default SignIn;

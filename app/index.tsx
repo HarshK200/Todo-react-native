@@ -2,48 +2,25 @@ import { Text, View, StyleSheet, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { BigButton } from "@/components/BigButton";
 import LandingPageIllustration from "@/assets/svg/landing_page_illustration";
-import { useState, useEffect } from "react";
-import * as SecureStore from "expo-secure-store";
+import { useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 // Landing page
-export default function Index() {
-  const [loadingAuth, setLoadingAuth] = useState(true);
-
+const Index = () => {
   const router = useRouter();
-
-  async function checkAuthUser() {
-    const accessToken = await SecureStore.getItemAsync("accessToken");
-    if (!accessToken) {
-      setLoadingAuth(false);
-      return;
-    }
-
-    const response = await fetch("https://dummyjson.com/auth/me", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-    if (response.status === 200) {
-      router.navigate("/todo");
-    } else {
-      setLoadingAuth(false);
-    }
-  }
+  const { user } = useAuth();
 
   useEffect(() => {
-    checkAuthUser();
-  }, []);
+    if (user) {
+      router.navigate("/home");
+    }
+  }, [user]);
 
-  if (loadingAuth) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator color="#6c63ff" size="large" />
-      </View>
-    );
-  }
-
-  return (
+  return user === undefined || user ? (
+    <View style={{ flex: 1 }}>
+      <ActivityIndicator size="large" />
+    </View>
+  ) : (
     <View style={styles.container}>
       <LandingPageIllustration style={styles.illustration} />
       <Text style={styles.headingText}>
@@ -52,8 +29,8 @@ export default function Index() {
       <BigButton
         style={styles.bigButton}
         textStyle={styles.bigButtonText}
-        title="Login"
-        onPress={() => router.navigate("/auth/login")}
+        title="Signin"
+        onPress={() => router.navigate("/signin")}
       />
       <Text
         style={styles.smallButtonText}
@@ -63,7 +40,7 @@ export default function Index() {
       </Text>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   illustration: {
@@ -95,3 +72,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
+export default Index;
