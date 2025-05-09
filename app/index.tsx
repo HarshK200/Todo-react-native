@@ -17,7 +17,7 @@ const Index = () => {
   }, [user]);
 
   return user === undefined || user ? (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
       <ActivityIndicator size="large" />
     </View>
   ) : (
