@@ -7,45 +7,38 @@ import { useState } from "react";
 import EyeSlashIcon from "@/assets/svg/eye_slash_icon";
 import EyeIcon from "@/assets/svg/eye_icon";
 import * as SecureStore from "expo-secure-store";
-import { SigninResponse } from "@/types";
 import { useRouter } from "expo-router";
+import { useAuth } from "@/context/AuthContext";
 
 // Signin page
 const SignIn = () => {
-  const [errorMsg, setErrorMsg] = useState<string | undefined>();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | undefined>();
   const [passwordHidden, setPasswordHidden] = useState(true);
-  const [signinLoading, setSigninLoading] = useState(false);
 
   const router = useRouter();
+  const auth = useAuth();
 
   async function handleSignin() {
-    setSigninLoading(true);
+    setLoading(true);
 
-    const response = await fetch("https://dummyjson.com/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: username,
-        password: password,
-        expiresInMins: 30, // optional, defaults to 60
-      }),
-      credentials: "include", // Include cookies (e.g., accessToken) in the request
-    });
-    const result = (await response.json()) as SigninResponse;
-    console.log(result);
+    const response = await auth.signIn(username, password);
+    if (!response) {
+      setErrorMsg("In useAuth() error occured during signin");
+      return;
+    }
 
-    if (response.status === 200) {
-      await SecureStore.setItemAsync("accessToken", result.accessToken);
-      await SecureStore.setItemAsync("refreshToken", result.refreshToken);
+    if (response.statusCode === 200) {
+      await SecureStore.setItemAsync("accessToken", response.accessToken!);
+      await SecureStore.setItemAsync("refreshToken", response.refreshToken!);
 
-      setSigninLoading(false);
+      setLoading(false);
       router.navigate("/home");
     } else {
-      setSigninLoading(false);
-      setErrorMsg(result.message!);
-      // console.log("Response message: ", result.message);
+      setLoading(false);
+      setErrorMsg(response.message);
     }
   }
 
@@ -93,7 +86,7 @@ const SignIn = () => {
         title="Signin"
         onPress={handleSignin}
         style={styles.bigButtonStyle}
-        loading={signinLoading}
+        loading={loading}
       />
     </View>
   );

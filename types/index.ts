@@ -7,9 +7,10 @@ export interface SigninResponse {
   gender: string;
   image: string;
 
-  accessToken: string;
-  refreshToken: string;
+  accessToken?: string;
+  refreshToken?: string;
   message?: string;
+  statusCode: number;
 }
 
 export interface User {

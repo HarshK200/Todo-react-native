@@ -8,11 +8,7 @@ interface AuthContext {
   signIn: (
     username: string,
     password: string,
-  ) => Promise<{
-    user: User;
-    accessToken: string;
-    refreshToken: string;
-  } | null>;
+  ) => Promise<SigninResponse | null>;
   signOut: () => Promise<void>;
 }
 const AuthContext = createContext<AuthContext | undefined>(undefined);
@@ -20,8 +16,8 @@ const AuthContext = createContext<AuthContext | undefined>(undefined);
 const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>();
 
-  // the api request to the server. If sccuessful returns the user, accessToken, refreshToken
-  // and returns null
+  // the api request to the server. If successful returns the signIn resopnse
+  // else if any error occures during making the request returns null
   const signIn = async (username: string, password: string) => {
     try {
       const response = await fetch("https://dummyjson.com/auth/login", {
@@ -35,28 +31,28 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       const result = (await response.json()) as SigninResponse;
-      const user: User = {
-        id: result.id,
-        username: result.username,
-        email: result.email,
-        firstName: result.firstName,
-        lastName: result.lastName,
-        gender: result.gender,
-        image: result.image,
-      };
+      result.statusCode = response.status;
+      if (response.status === 200) {
+        const user: User = {
+          id: result.id,
+          username: result.username,
+          email: result.email,
+          firstName: result.firstName,
+          lastName: result.lastName,
+          gender: result.gender,
+          image: result.image,
+        };
 
-      setUser(user);
+        setUser(user);
+      } else {
+        setUser(null);
+      }
 
-      return {
-        user,
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken,
-      };
+      return result;
     } catch (e) {
-      console.log("Error during signin: ", e);
+      console.error("Error during signin: ", e);
 
       setUser(null);
-
       return null;
     }
   };
@@ -68,7 +64,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   };
 
-  // TODO: make a request to dummyjsonapi/auth/me or /verify with the accessToken and refreshToken (From expo-secure-store)
+  // makes a request to dummyjsonapi/user/me with the accessToken and refreshToken (From expo-secure-store)
   // to check if the user jwtTokens are still valid and if they are then login the user i.e. set the User to the response
   // Also if accessToken is expried try to get it refreshed using the refreshToken
   const handleAuth = async () => {
@@ -83,6 +79,8 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (response.status === 200) {
         const resultUser = (await response.json()) as User;
         setUser(resultUser);
+
+        // TODO: remove this console.log()
         console.log(
           "successfully validated accessToken auth user is: ",
           resultUser,
@@ -91,8 +89,9 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (response.status === 401) {
+        // TODO: remove this console.log()
         console.log(
-          "Exipred accessToken attempting to refresh using refreshToken",
+          "Exipred or invalid accessToken attempting to refresh using refreshToken",
         );
         const response = await fetch("https://dummyjson.com/auth/refresh", {
           method: "POST",
@@ -119,7 +118,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  if (!user) {
+  if (user === undefined) {
     handleAuth();
   }
 
